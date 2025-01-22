@@ -1,0 +1,277 @@
+<template>
+  <div class="job-listings-view">
+    <!-- <nav-bar /> -->
+    
+    <main class="main-content">
+      <!-- Search and Filter Section -->
+      <section class="search-filters mb-4">
+        <div class="container">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <input
+                v-model="searchQuery"
+                type="text"
+                class="form-control"
+                placeholder="Search jobs..."
+                @input="handleSearch"
+              >
+            </div>
+            <div class="col-md-3">
+              <select v-model="selectedLocation" class="form-select" @change="handleSearch">
+                <option value="">All Locations</option>
+                <option v-for="location in uniqueLocations" :key="location" :value="location">
+                  {{ location }}
+                </option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <select v-model="selectedJobType" class="form-select" @change="handleSearch">
+                <option value="">All Job Types</option>
+                <option value="Full-time">Full-time</option>
+                <option value="Part-time">Part-time</option>
+                <option value="Contract">Contract</option>
+                <option value="Internship">Internship</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <button class="btn btn-primary w-100" @click="handleSearch">
+                Search
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Jobs Section -->
+      <section class="jobs-section">
+        <div class="container">
+          <!-- Loading State -->
+          <div v-if="jobStore.loading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+
+          <!-- Error State -->
+          <div v-else-if="jobStore.error" class="alert alert-danger" role="alert">
+            {{ jobStore.error }}
+          </div>
+
+          <!-- Jobs List -->
+          <div v-else>
+            <div v-if="jobs.length === 0" class="text-center py-5">
+              <h3>No jobs found</h3>
+              <p>Try adjusting your search criteria</p>
+            </div>
+            
+            <div v-else class="row">
+              <div v-for="job in jobs" :key="job.id" class="col-12 mb-4">
+                <div class="card job-card">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                      <img
+                        v-if="job.companyLogo"
+                        :src="job.companyLogo"
+                        :alt="job.companyName"
+                        class="company-logo me-3"
+                      >
+                      <div>
+                        <h5 class="card-title mb-1">{{ job.companyName }}</h5>
+                        <p class="text-muted mb-0">{{ job.Location }}</p>
+                      </div>
+                    </div>
+                    
+                    <div class="job-details">
+                      <p class="card-text">{{ truncateDescription(job.Description) }}</p>
+                      <div class="job-meta">
+                        <span class="badge bg-primary me-2">{{ job.job_type }}</span>
+                        <span class="badge bg-secondary me-2">{{ job.Level }}</span>
+                        <span class="badge bg-info">{{ formatSalary(job.Salary) }}</span>
+                      </div>
+                    </div>
+
+                    <div class="mt-3">
+                      <router-link
+                        :to="{ name: 'job-details', params: { id: job.id }}"
+                        class="btn btn-outline-primary"
+                      >
+                        View Details
+                      </router-link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footers />
+  </div>
+</template>
+
+<script>
+import { useJobStore } from '@/stores/jobStore';
+
+export default {
+  name: 'JobListingsView',
+
+  data() {
+    return {
+      jobStore: useJobStore(),
+      searchQuery: '',
+      selectedLocation: '',
+      selectedJobType: '',
+      pageTitle: 'Job Listings',
+      searchTimeout: null
+    };
+  },
+
+  computed: {
+    jobs() {
+      return this.jobStore.allJobs;
+    },
+    uniqueLocations() {
+      const locations = this.jobs.map(job => job.Location);
+      return [...new Set(locations)].filter(Boolean);
+    }
+  },
+
+  methods: {
+    handleSearch() {
+      // Clear any existing timeout
+      if (this.searchTimeout) {
+        clearTimeout(this.searchTimeout);
+      }
+
+      // Set a new timeout
+      this.searchTimeout = setTimeout(async () => {
+        try {
+          await this.jobStore.searchJobs({
+            keyword: this.searchQuery,
+            location: this.selectedLocation,
+            job_type: this.selectedJobType
+          });
+        } catch (error) {
+          console.error('Error searching jobs:', error);
+        }
+      }, 300); // 300ms delay
+    },
+
+    truncateDescription(text, length = 150) {
+      if (text.length <= length) return text;
+      return text.substring(0, length) + '...';
+    },
+
+    formatSalary(salary) {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 0
+      }).format(salary);
+    },
+
+    async fetchJobs() {
+      try {
+        await this.jobStore.fetchJobs();
+      } catch (error) {
+        console.error('Error fetching jobs:', error);
+      }
+    }
+  },
+
+  mounted() {
+    document.title = this.pageTitle;
+    this.fetchJobs();
+  },
+
+  beforeUnmount() {
+    // Clear any existing timeout when component is destroyed
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+    }
+  }
+};
+</script>
+
+<style scoped>
+.job-listings-view {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  padding: 2rem 0;
+  background-color: #f8f9fa;
+}
+
+.search-filters {
+  background-color: #ffffff;
+  padding: 1.5rem 0;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.jobs-section {
+  background-color: transparent;
+}
+
+.company-logo {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.job-card {
+  transition: transform 0.2s ease-in-out;
+  border: 1px solid #dee2e6;
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.job-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.job-meta {
+  margin-top: 1rem;
+}
+
+.badge {
+  padding: 0.5em 1em;
+  font-weight: 500;
+}
+
+.card-title {
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.btn-outline-primary {
+  border-width: 2px;
+}
+
+.btn-outline-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1rem 0;
+  }
+
+  .search-filters {
+    padding: 1rem 0;
+  }
+
+  .job-card {
+    margin-bottom: 1rem;
+  }
+}
+</style>

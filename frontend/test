@@ -1,0 +1,78 @@
+<template>
+    <div>
+        <div class="job-cards">
+            <div class="job-card" v-for="job in jobs" :key="job.id">
+                <h2>{{ job.title }}</h2>
+                <p>{{ job.description }}</p>
+                <p><strong>Company:</strong> {{ job.company }}</p>
+                <img :src="getLogoPath(job.logo)" alt="Company Logo" class="job-logo"/>
+                <p><strong>Role:</strong> {{ job.position }} </p>
+                <p><strong>Role:</strong> {{ job.role }}</p>
+                <p><strong>Level:</strong> {{ job.level }}</p>
+                <p><strong>Contract:</strong> {{ job.contract }}</p>
+                <p><strong>Languages:</strong> {{ job.languages }}</p>
+                <p><strong>Location:</strong> {{ job.location }}</p>
+                <button @click="apply(job.id)">Apply Now</button>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+import { useJobsStore } from '@/stores/job';
+
+export default {
+    setup() {
+        const jobsStore = useJobsStore();
+
+        // Fetch jobs when the component is mounted
+        jobsStore.fetchJobs();
+
+        return {
+            jobs: jobsStore.jobs,
+            apply: (jobId) => {
+                // Logic to handle job application
+                console.log(`Applying for job with ID: ${jobId}`);
+            }
+        };
+    }
+};
+</script>
+
+<style scoped>
+.job-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.job-card {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 16px;
+    width: 300px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.job-card h2 {
+    font-size: 1.5em;
+    margin: 0 0 10px;
+}
+
+.job-card p {
+    margin: 5px 0;
+}
+
+.job-card button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.job-card button:hover {
+    background-color: #0056b3;
+}
+</style>
