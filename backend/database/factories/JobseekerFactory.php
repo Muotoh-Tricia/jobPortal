@@ -2,48 +2,35 @@
 
 namespace Database\Factories;
 
+use App\Models\JobSeeker;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Jobseeker>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\JobSeeker>
  */
-class JobseekerFactory extends Factory
+class JobSeekerFactory extends Factory
 {
+    protected $model = JobSeeker::class;
+
     /**
      * Define the model's default state.
      *
      * @return array<string, mixed>
      */
-
-    public function definition()
+    public function definition(): array
     {
-        $skillsByIndustry = [
-            'Technology' => ['PHP', 'Laravel', 'Vue.js', 'SQL', 'Python', 'JavaScript', 'React', 'DevOps'],
-            'Healthcare' => ['Patient Care', 'Medical Coding', 'Clinical Research', 'Nursing', 'Phlebotomy'],
-            'Education' => ['Curriculum Development', 'Classroom Management', 'Educational Technology', 'Public Speaking'],
-            'Finance' => ['Accounting', 'Financial Analysis', 'Risk Management', 'Tax Preparation', 'Budget Planning'],
-            'Retail' => ['Sales Management', 'Customer Service', 'Merchandising', 'Inventory Control'],
-            'Construction' => ['Blueprint Reading', 'Project Management', 'Masonry', 'Welding', 'Electrical Wiring'],
-        ];
-
-        // Randomly select an industry and its associated skills
-        $industry = $this->faker->randomElement(array_keys($skillsByIndustry));
-        $skills = $skillsByIndustry[$industry];
-
-        // Select a random number of skills, ensuring it's within the available range
-        $numSkills = rand(3, min(count($skills), 5)); // Ensure we don't exceed the number of available skills
-        $selectedSkills = $this->faker->randomElements($skills, $numSkills);
-
         return [
-            'first_name' => $this->faker->firstName,
-            'last_name' => $this->faker->lastName,
-            'email' => $this->faker->unique()->safeEmail,
-            'phone_number' => '+1' . $this->faker->numerify('###-###-####'),
-            'date_of_birth' => $this->faker->date('Y-m-d', '2000-01-01'),
-            'address' => $this->faker->streetAddress . ', ' . $this->faker->city,
-            'resume' => 'resumes/' . strtolower($this->faker->firstName) . '.pdf', // Example file path
-            'skills' => implode(', ', $selectedSkills), // Join skills into a string
-            'experience' => "2 years of experience in {$industry}.",
+            'user_id' => User::factory()->create(['role' => 'jobseeker'])->id,
+            'resume_path' => $this->faker->optional()->url(),
+            'skills' => implode(', ', $this->faker->randomElements([
+                'Python', 'JavaScript', 'React', 'Node.js', 
+                'Java', 'C++', 'PHP', 'SQL', 'Docker', 'AWS'
+            ], $this->faker->numberBetween(2, 5))),
+            'experience_years' => $this->faker->numberBetween(0, 15),
+            'education_level' => $this->faker->randomElement([
+                'High School', 'Bachelor\'s', 'Master\'s', 'PhD', 'Associate Degree'
+            ])
         ];
     }
 }

@@ -4,24 +4,27 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\User;
+use App\Models\Employer;
 use App\Models\Application;
 
-class JobSeeker extends Model
+class Job extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
-        'resume_path',
-        'skills',
-        'experience_years',
-        'education_level'
+        'employer_id',
+        'title',
+        'description',
+        'requirements',
+        'salary_range',
+        'location',
+        'job_type',
+        'status'
     ];
 
-    public function user()
+    public function employer()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Employer::class);
     }
 
     public function applications()

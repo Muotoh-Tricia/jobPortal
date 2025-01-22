@@ -2,9 +2,11 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
+use App\Models\User;
 use App\Models\Employer;
-use App\Models\JobPortal;
+use App\Models\JobSeeker;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,53 +15,37 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create a test employer
-        $employer = Employer::create([
-            'name' => 'Test Employer',
-            'email' => 'employer@test.com',
-            'password' => bcrypt('password'),
-            'company_name' => 'Test Company',
-            'company_description' => 'A test company description',
-            'website' => 'https://test.com',
-            'phone' => '1234567890',
-            'address' => '123 Test St'
+        // Create test employer
+        $employerUser = User::create([
+            'name' => 'John Employer',
+            'email' => 'employer@example.com',
+            'password' => Hash::make('password123'),
+            'role' => 'employer'
         ]);
 
-        // Create some test jobs
-        JobPortal::create([
-            'employer_id' => $employer->id,
-            'companyLogo' => 'https://via.placeholder.com/150',
-            'companyName' => 'Test Company',
-            'Description' => 'This is a test job description',
-            'Address' => '123 Test St',
-            'Phone' => '1234567890',
-            'Email' => 'jobs@test.com',
-            'Salary' => 50000.00,
-            'Level' => 'Entry Level',
-            'Language' => 'English',
-            'Country' => 'United States',
-            'Responsibility' => 'Test responsibilities',
-            'Location' => 'Remote',
-            'job_type' => 'Full-time',
-            'application_deadline' => '2025-12-31'
+        Employer::create([
+            'user_id' => $employerUser->id,
+            'company_name' => 'Tech Solutions Ltd',
+            'company_website' => 'https://techsolutions.com',
+            'company_description' => 'A leading technology solutions provider',
+            'company_location' => 'San Francisco, CA',
+            'contact_email' => 'hr@techsolutions.com',
+            'contact_phone' => '+1-555-123-4567'
         ]);
 
-        JobPortal::create([
-            'employer_id' => $employer->id,
-            'companyLogo' => 'https://via.placeholder.com/150',
-            'companyName' => 'Test Company',
-            'Description' => 'This is another test job description',
-            'Address' => '123 Test St',
-            'Phone' => '1234567890',
-            'Email' => 'jobs@test.com',
-            'Salary' => 75000.00,
-            'Level' => 'Mid Level',
-            'Language' => 'English',
-            'Country' => 'United States',
-            'Responsibility' => 'Test responsibilities',
-            'Location' => 'Hybrid',
-            'job_type' => 'Full-time',
-            'application_deadline' => '2025-12-31'
+        // Create test job seeker
+        $jobSeekerUser = User::create([
+            'name' => 'Jane Jobseeker',
+            'email' => 'jobseeker@example.com',
+            'password' => Hash::make('password123'),
+            'role' => 'jobseeker'
         ]);
+
+        JobSeeker::create([
+            'user_id' => $jobSeekerUser->id,
+        ]);
+
+        // Seed jobs
+        $this->call(JobSeeder::class);
     }
 }

@@ -6,30 +6,22 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function up()
     {
         Schema::create('employers', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->string('password');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('company_name');
+            $table->string('company_website')->nullable();
             $table->text('company_description')->nullable();
-            $table->string('website')->nullable();
-            $table->string('phone')->nullable();
-            $table->string('address')->nullable();
-            $table->rememberToken();
+            $table->string('company_location')->nullable();
+            $table->string('contact_email')->nullable();
+            $table->string('contact_phone')->nullable();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('employers');
     }

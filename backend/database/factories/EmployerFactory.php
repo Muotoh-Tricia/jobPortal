@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\Employer;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -9,23 +11,24 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class EmployerFactory extends Factory
 {
+    protected $model = Employer::class;
+
     /**
      * Define the model's default state.
      *
      * @return array<string, mixed>
      */
-    public function definition()
+    public function definition(): array
     {
-        $industries = ['Technology', 'Healthcare', 'Education', 'Finance', 'Retail'];
-
         return [
-            'company_name' => $this->faker->unique()->company,
-            'description' => 'We are a reputed company specializing in ' . $this->faker->randomElement($industries),
-            'industry' => $this->faker->randomElement($industries),
-            'number_of_staff' => $this->faker->numberBetween(5, 500),
-            'website' => 'https://' . strtolower($this->faker->domainWord) . '.com',
-            'phone_number' => '+1' . $this->faker->numerify('###-###-####'),
-            'email' => strtolower($this->faker->companyEmail),
+            'user_id' => User::factory()->create(['role' => 'employer'])->id,
+            'company_name' => $this->faker->company(),
+            'company_description' => $this->faker->paragraph(),
+            'industry' => $this->faker->randomElement([
+                'Technology', 'Finance', 'Healthcare', 
+                'Education', 'Manufacturing', 'Retail'
+            ]),
+            'location' => $this->faker->city()
         ];
     }
 }
