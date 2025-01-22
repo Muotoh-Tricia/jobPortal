@@ -76,17 +76,17 @@
                         class="company-logo me-3"
                       >
                       <div>
-                        <h5 class="card-title mb-1">{{ job.companyName }}</h5>
-                        <p class="text-muted mb-0">{{ job.Location }}</p>
+                        <h5 class="card-title mb-1">{{ job.title }}</h5>
+                        <p class="text-muted mb-0">{{ job.location }}</p>
                       </div>
                     </div>
                     
                     <div class="job-details">
-                      <p class="card-text">{{ truncateDescription(job.Description) }}</p>
+                      <p class="card-text">{{ truncateDescription(job.description) }}</p>
                       <div class="job-meta">
-                        <span class="badge bg-primary me-2">{{ job.job_type }}</span>
-                        <span class="badge bg-secondary me-2">{{ job.Level }}</span>
-                        <span class="badge bg-info">{{ formatSalary(job.Salary) }}</span>
+                        <span class="badge bg-primary me-2">{{ job.type }}</span>
+                        <span class="badge bg-secondary me-2">{{ job.level || 'Entry Level' }}</span>
+                        <span class="badge bg-info">{{ formatSalary(job.salary) }}</span>
                       </div>
                     </div>
 
@@ -133,7 +133,7 @@ export default {
       return this.jobStore.allJobs;
     },
     uniqueLocations() {
-      const locations = this.jobs.map(job => job.Location);
+      const locations = this.jobs.map(job => job.location);
       return [...new Set(locations)].filter(Boolean);
     }
   },
@@ -160,11 +160,20 @@ export default {
     },
 
     truncateDescription(text, length = 150) {
-      if (text.length <= length) return text;
-      return text.substring(0, length) + '...';
+      // Handle undefined or null values
+      if (!text) return '';
+      
+      // Convert to string to ensure we can use substring
+      const safeText = String(text);
+      
+      if (safeText.length <= length) return safeText;
+      return safeText.substring(0, length) + '...';
     },
 
     formatSalary(salary) {
+      // Handle undefined or null values
+      if (salary == null) return 'Not specified';
+      
       return new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',

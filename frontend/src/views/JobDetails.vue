@@ -24,18 +24,18 @@
               <div class="col-md-4 mb-4 mb-md-0">
                 <div class="company-info">
                   <img
-                    v-if="job.companyLogo"
-                    :src="job.companyLogo"
-                    :alt="job.companyName"
+                    v-if="job.employer && job.employer.logo"
+                    :src="job.employer.logo"
+                    :alt="job.employer.name"
                     class="company-logo mb-3"
                   >
-                  <h4 class="company-name">{{ job.companyName }}</h4>
+                  <h4 class="company-name">{{ job.employer ? job.employer.name : 'Unknown Company' }}</h4>
                   <p class="text-muted">
-                    <i class="bi bi-geo-alt"></i> {{ job.Location }}
+                    <i class="bi bi-geo-alt"></i> {{ job.location }}
                   </p>
-                  <div class="contact-info">
-                    <p><i class="bi bi-envelope"></i> {{ job.Email }}</p>
-                    <p><i class="bi bi-telephone"></i> {{ job.Phone }}</p>
+                  <div class="contact-info" v-if="job.employer">
+                    <p><i class="bi bi-envelope"></i> {{ job.employer.email || 'Not available' }}</p>
+                    <p><i class="bi bi-telephone"></i> {{ job.employer.phone || 'Not available' }}</p>
                   </div>
                 </div>
               </div>
@@ -45,11 +45,11 @@
                 <div class="job-info">
                   <div class="d-flex justify-content-between align-items-start mb-4">
                     <div>
-                      <h2 class="job-title mb-2">{{ job.companyName }}</h2>
+                      <h2 class="job-title mb-2">{{ job.title }}</h2>
                       <div class="job-meta">
-                        <span class="badge bg-primary me-2">{{ job.job_type }}</span>
-                        <span class="badge bg-secondary me-2">{{ job.Level }}</span>
-                        <span class="badge bg-info">{{ formatSalary(job.Salary) }}</span>
+                        <span class="badge bg-primary me-2">{{ job.type }}</span>
+                        <span class="badge bg-secondary me-2">{{ job.level || 'Entry Level' }}</span>
+                        <span class="badge bg-info">{{ formatSalary(job.salary) }}</span>
                       </div>
                     </div>
                     <button class="btn btn-primary" @click="applyForJob">
@@ -59,27 +59,31 @@
 
                   <div class="job-description mb-4">
                     <h5>Job Description</h5>
-                    <p>{{ job.Description }}</p>
+                    <p>{{ job.description }}</p>
                   </div>
 
                   <div class="job-responsibilities mb-4">
                     <h5>Responsibilities</h5>
-                    <div v-html="formatResponsibilities(job.Responsibility)"></div>
+                    <div v-html="formatResponsibilities(job.requirements)"></div>
                   </div>
 
                   <div class="additional-info">
                     <div class="row">
                       <div class="col-md-6 mb-3">
-                        <h6>Language</h6>
-                        <p>{{ job.Language || 'Not specified' }}</p>
+                        <h6>Job Type</h6>
+                        <p>{{ job.type || 'Not specified' }}</p>
                       </div>
                       <div class="col-md-6 mb-3">
-                        <h6>Country</h6>
-                        <p>{{ job.Country }}</p>
+                        <h6>Location</h6>
+                        <p>{{ job.location }}</p>
                       </div>
                       <div class="col-md-6 mb-3">
-                        <h6>Application Deadline</h6>
-                        <p>{{ formatDate(job.application_deadline) }}</p>
+                        <h6>Salary</h6>
+                        <p>{{ formatSalary(job.salary) }}</p>
+                      </div>
+                      <div class="col-md-6 mb-3">
+                        <h6>Status</h6>
+                        <p>{{ job.status || 'Active' }}</p>
                       </div>
                     </div>
                   </div>
@@ -125,6 +129,9 @@ export default {
 
   methods: {
     formatSalary(salary) {
+      // Handle undefined or null values
+      if (salary == null) return 'Not specified';
+      
       return new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',
@@ -147,7 +154,7 @@ export default {
       // If responsibilities is already an array, use it; otherwise, split by newlines
       const items = Array.isArray(responsibilities) 
         ? responsibilities 
-        : responsibilities.split('\n');
+        : (responsibilities.split('\n') || []);
 
       return items
         .filter(item => item.trim())
@@ -157,14 +164,25 @@ export default {
 
     async applyForJob() {
       // This will be implemented when we create the job application functionality
+      if (!this.job) {
+        console.error('No job selected');
+        return;
+      }
       console.log('Applying for job:', this.job.id);
     },
 
     async fetchJobDetails() {
       try {
-        await this.jobStore.fetchJob(this.$route.params.id);
+        const jobId = this.$route.params.id;
+        if (!jobId) {
+          throw new Error('No job ID provided');
+        }
+        
+        await this.jobStore.fetchJob(jobId);
       } catch (error) {
         console.error('Error fetching job details:', error);
+        // Optionally, you can set an error state or redirect
+        this.$router.push('/jobs');
       }
     }
   },

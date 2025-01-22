@@ -30,8 +30,8 @@ export default {
   // Get all jobs
   async getAllJobs() {
     try {
-      const response = await apiClient.get('/jobs');
-      return response.data.data; // Access the data property of the response
+      const response = await apiClient.get('/v1/jobs');
+      return { data: response.data }; // Wrap response to match existing store logic
     } catch (error) {
       handleError(error, 'Failed to fetch jobs');
     }
@@ -40,8 +40,8 @@ export default {
   // Get a specific job
   async getJob(id) {
     try {
-      const response = await apiClient.get(`/jobs/${id}`);
-      return response.data.data;
+      const response = await apiClient.get(`/v1/jobs/${id}`);
+      return { data: response.data };
     } catch (error) {
       handleError(error, 'Failed to fetch job details');
     }
@@ -50,8 +50,8 @@ export default {
   // Create a new job
   async createJob(jobData) {
     try {
-      const response = await apiClient.post('/jobs', jobData);
-      return response.data.data;
+      const response = await apiClient.post('/v1/jobs', jobData);
+      return { data: response.data };
     } catch (error) {
       handleError(error, 'Failed to create job');
     }
@@ -60,8 +60,8 @@ export default {
   // Update a job
   async updateJob(id, jobData) {
     try {
-      const response = await apiClient.put(`/jobs/${id}`, jobData);
-      return response.data.data;
+      const response = await apiClient.put(`/v1/jobs/${id}`, jobData);
+      return { data: response.data };
     } catch (error) {
       handleError(error, 'Failed to update job');
     }
@@ -70,7 +70,7 @@ export default {
   // Delete a job
   async deleteJob(id) {
     try {
-      const response = await apiClient.delete(`/jobs/${id}`);
+      const response = await apiClient.delete(`/v1/jobs/${id}`);
       return response.data;
     } catch (error) {
       handleError(error, 'Failed to delete job');
@@ -80,8 +80,8 @@ export default {
   // Search jobs
   async searchJobs(params) {
     try {
-      const response = await apiClient.get('/jobs/search', { params });
-      return response.data.data;
+      const response = await apiClient.get('/v1/jobs/search', { params });
+      return { data: response.data };
     } catch (error) {
       handleError(error, 'Failed to search jobs');
     }
