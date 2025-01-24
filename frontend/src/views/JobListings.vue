@@ -37,6 +37,9 @@
               <button class="btn btn-primary w-100" @click="handleSearch">
                 Search
               </button>
+              <button class="btn btn-secondary w-100 mt-2" @click="resetSearch">
+                Reset
+              </button>
             </div>
           </div>
         </div>
@@ -59,8 +62,8 @@
 
           <!-- Jobs List -->
           <div v-else>
-            <div v-if="jobs.length === 0" class="text-center py-5">
-              <h3>No jobs found</h3>
+            <div v-if="jobs.length === 0 && isSearchPerformed" class="text-center py-5">
+              <h3>{{ searchResultMessage }}</h3>
               <p>Try adjusting your search criteria</p>
             </div>
             
@@ -124,17 +127,36 @@ export default {
       selectedLocation: '',
       selectedJobType: '',
       pageTitle: 'Job Listings',
-      searchTimeout: null
+      searchTimeout: null,
+      isSearchPerformed: false
     };
   },
 
   computed: {
     jobs() {
-      return this.jobStore.allJobs;
+      return this.jobStore.allJobs || [];
     },
     uniqueLocations() {
-      const locations = this.jobs.map(job => job.location);
-      return [...new Set(locations)].filter(Boolean);
+      try {
+        // Safely get unique locations with fallback
+        const locations = (this.jobs || [])
+          .map(job => job.location)
+          .filter(location => location && location.trim() !== '');
+        return [...new Set(locations)];
+      } catch (error) {
+        console.error('Error computing unique locations:', error);
+        return [];
+      }
+    },
+    searchResultMessage() {
+      if (!this.isSearchPerformed) return '';
+
+      const jobCount = this.jobs ? this.jobs.length : 0;
+      if (jobCount > 0) {
+        return `Found ${jobCount} job${jobCount !== 1 ? 's' : ''}`;
+      }
+
+      return 'No jobs found matching your search criteria';
     }
   },
 
@@ -145,25 +167,60 @@ export default {
         clearTimeout(this.searchTimeout);
       }
 
-      // Set a new timeout
-      this.searchTimeout = setTimeout(async () => {
-        try {
-          await this.jobStore.searchJobs({
-            keyword: this.searchQuery,
-            location: this.selectedLocation,
-            job_type: this.selectedJobType
-          });
-        } catch (error) {
-          console.error('Error searching jobs:', error);
-        }
-      }, 300); // 300ms delay
+      // Set flag that search has been performed
+      this.isSearchPerformed = true;
+
+      // Reset any previous errors
+      this.jobStore.error = null;
+
+      // Trim search inputs to prevent unnecessary whitespace searches
+      const trimmedQuery = this.searchQuery ? this.searchQuery.trim() : '';
+      const trimmedLocation = this.selectedLocation ? this.selectedLocation.trim() : '';
+      const trimmedJobType = this.selectedJobType ? this.selectedJobType.trim() : '';
+
+      // Validate search inputs
+      const searchParams = {};
+      if (trimmedQuery) searchParams.query = trimmedQuery;
+      if (trimmedLocation) searchParams.location = trimmedLocation;
+      if (trimmedJobType) searchParams.job_type = trimmedJobType;
+
+      // Only perform search if at least one field has a value
+      if (Object.keys(searchParams).length > 0) {
+        // Set a new timeout
+        this.searchTimeout = setTimeout(async () => {
+          try {
+            
+            
+            const searchResults = await this.jobStore.searchJobs(searchParams);
+            
+            // Check if no jobs were found after search
+            if (!searchResults || searchResults.length === 0) {
+              this.jobStore.error = 'No jobs found matching your search criteria.';
+            }
+          } catch (error) {
+            console.error('Error searching jobs:', error);
+            
+            // Set user-friendly error message
+            this.jobStore.error = 'Unable to perform search. Please try again later.';
+          }
+        }, 300); // 300ms delay
+      } else {
+        // If no search criteria, fetch all jobs
+        this.fetchJobs();
+      }
+    },
+
+    resetSearch() {
+      this.searchQuery = '';
+      this.selectedLocation = '';
+      this.selectedJobType = '';
+      this.isSearchPerformed = false;
+      this.fetchJobs();
     },
 
     truncateDescription(text, length = 150) {
-      // Handle undefined or null values
       if (!text) return '';
       
-      // Convert to string to ensure we can use substring
       const safeText = String(text);
       
       if (safeText.length <= length) return safeText;
@@ -171,7 +228,6 @@ export default {
     },
 
     formatSalary(salary) {
-      // Handle undefined or null values
       if (salary == null) return 'Not specified';
       
       return new Intl.NumberFormat('en-US', {
@@ -181,11 +237,12 @@ export default {
       }).format(salary);
     },
 
-    async fetchJobs() {
+    fetchJobs() {
       try {
-        await this.jobStore.fetchJobs();
+        this.jobStore.fetchJobs();
       } catch (error) {
         console.error('Error fetching jobs:', error);
+        this.jobStore.error = 'Unable to load jobs. Please try again later.';
       }
     }
   },
@@ -196,7 +253,6 @@ export default {
   },
 
   beforeUnmount() {
-    // Clear any existing timeout when component is destroyed
     if (this.searchTimeout) {
       clearTimeout(this.searchTimeout);
     }

@@ -106,11 +106,22 @@ export const useJobStore = defineStore('jobs', {
       this.loading = true;
       try {
         const response = await jobService.searchJobs(searchParams);
-        this.jobs = response.data;
-        this.error = null;
-        return response.data;
+        
+        // Ensure we use the data property from the response
+        this.jobs = response.data || [];
+        
+        this.error = this.jobs.length === 0 
+          ? 'No jobs found matching your search criteria.' 
+          : null;
+        
+        return this.jobs;
       } catch (error) {
-        this.error = error.message;
+        console.error('Job search error:', error);
+        this.error = error.message || 'Unable to perform job search.';
+        
+        // Fallback to all jobs
+        await this.fetchJobs();
+        
         throw error;
       } finally {
         this.loading = false;

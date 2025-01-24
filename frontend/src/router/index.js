@@ -8,39 +8,45 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/',
-      name: 'home',
-      component: HomeView
+      path: "/",
+      name: "home",
+      component: HomeView,
     },
     {
-      path: '/jobs',
-      name: 'jobs',
-      component: JobListings
+      path: "/jobs",
+      name: "jobs",
+      component: JobListings,
     },
     {
-      path: '/login',
-      name: 'login',
-      component: Login
+      path: "/login",
+      name: "login",
+      component: Login,
     },
     {
-      path: '/registration',
-      name: 'registration',
-      component: Registration
+      path: "/registration",
+      name: "registration",
+      component: Registration,
     },
     {
-      path: '/job/:id',
-      name: 'job-details',
-      component: () => import('../views/JobDetails.vue')
+      path: "/job/:id",
+      name: "job-details",
+      component: () => import("../views/JobDetails.vue"),
     },
     {
       path: "/registration",
       name: "Registration",
-      component: () => import('../views/Registration.vue'),
+      component: () => import("../views/Registration.vue"),
     },
     {
       path: "/FindJob",
       name: "FindJob",
-      component: () => import('../views/FindJob.vue'),
+      component: () => import("../views/FindJob.vue"),
+    },
+    {
+      path: "/profile",
+      name: "profile",
+      component: () => import("../views/Profile.vue"),
+      meta: { requiresAuth: true }
     }
   ],
 });

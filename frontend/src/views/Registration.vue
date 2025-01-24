@@ -79,9 +79,9 @@
         Register
       </button>
 
-      <div class="text-center">
+      <div class="text-center mb-5">
         Already have an account? 
-        <router-link to="/login" class="link-primary">Login here</router-link>
+        <router-link to="/login" class="text-decoration-none">Login here</router-link>
       </div>
     </form>
   </div>

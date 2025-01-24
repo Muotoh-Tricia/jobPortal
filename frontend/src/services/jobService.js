@@ -80,10 +80,74 @@ export default {
   // Search jobs
   async searchJobs(params) {
     try {
-      const response = await apiClient.get('/v1/jobs/search', { params });
-      return { data: response.data };
+      // Clean and validate search parameters
+      const cleanParams = {};
+      
+      // Add parameters only if they are not empty
+      if (params.query && params.query.trim() !== '') {
+        cleanParams.query = params.query.trim();
+      }
+      
+      if (params.location && params.location.trim() !== '') {
+        cleanParams.location = params.location.trim();
+      }
+      
+      if (params.job_type && params.job_type.trim() !== '') {
+        cleanParams.job_type = params.job_type.trim();
+      }
+
+      // If no parameters are provided, return all jobs
+      if (Object.keys(cleanParams).length === 0) {
+        return await this.getAllJobs();
+      }
+
+      try {
+        const response = await apiClient.get('/v1/jobs/search', { 
+          params: cleanParams,
+          validateStatus: function (status) {
+            return status >= 200 && status < 300;
+          }
+        });
+        
+    
+        // Ensure response data is an array
+        const searchResults = Array.isArray(response.data) ? response.data : [];
+        
+        // Validate and transform job data
+        const validatedResults = searchResults.map(job => ({
+          id: job.id || null,
+          title: job.title || 'Untitled Job',
+          description: job.description || 'No description available',
+          location: job.location || 'Location not specified',
+          type: job.job_type || 'Not specified',
+          companyName: job.employer?.name || 'Unknown Company',
+          companyLogo: job.employer?.logo || null,
+          salary: job.salary || 'Not disclosed',
+          level: job.level || 'Entry Level'
+        }));
+
+        return { data: validatedResults };
+      } catch (axiosError) {
+        // More detailed error logging
+        console.error('Axios Search Error:', {
+          status: axiosError.response?.status,
+          data: axiosError.response?.data,
+          headers: axiosError.response?.headers,
+          config: axiosError.config
+        });
+
+        // If it's a 422 error, log the validation errors
+        if (axiosError.response?.status === 422) {
+          console.error('Validation Errors:', axiosError.response.data.errors);
+        }
+
+        // Fallback to all jobs
+        return await this.getAllJobs();
+      }
     } catch (error) {
-      handleError(error, 'Failed to search jobs');
+      // Catch any other unexpected errors
+      console.error('Unexpected search error:', error);
+      return await this.getAllJobs();
     }
   }
 };

@@ -87,7 +87,7 @@
                 style="width: 80px; height: 80px;">
                 <span class="h4 mb-0">2</span>
               </div>
-              <router-link to="/FindJob" class="text-decoration-none">
+              <router-link to="/jobs" class="text-decoration-none">
                 Find Jobs
               </router-link>
               <p class="text-muted">Search and filter jobs matching your skills</p>

@@ -61,24 +61,70 @@ export default {
   // User Logout
   async logout() {
     try {
-      await apiClient.post('/auth/logout');
+      // Get the current token
+      const token = localStorage.getItem('user_token');
       
-      // Clear local storage
+      // Only attempt backend logout if token exists
+      if (token) {
+        try {
+          await apiClient.post('/auth/logout', {}, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+        } catch (logoutError) {
+          // If logout fails due to invalid/expired token, 
+          // we'll still proceed with clearing local storage
+          console.warn('Backend logout failed:', logoutError);
+        }
+      }
+      
+      // Always clear local storage
       localStorage.removeItem('user_token');
       localStorage.removeItem('user_info');
+      
+      return true;
     } catch (error) {
-      handleError(error, 'Logout failed');
+      // Unexpected error
+      console.error('Unexpected logout error:', error);
+      
+      // Ensure local storage is cleared even if an error occurs
+      localStorage.removeItem('user_token');
+      localStorage.removeItem('user_info');
+      
+      throw error;
     }
+  },
+
+  // Enhanced token validation method
+  isTokenValid() {
+    const token = localStorage.getItem('user_token');
+    const userInfo = localStorage.getItem('user_info');
+    
+    // Check if both token and user info exist
+    if (!token || !userInfo) {
+      return false;
+    }
+    
+    try {
+      // Optional: Add more sophisticated token validation if needed
+      // For example, check token expiration
+      const user = JSON.parse(userInfo);
+      return !!user;
+    } catch (error) {
+      // If parsing fails, consider token invalid
+      return false;
+    }
+  },
+
+  // Override existing isAuthenticated method
+  isAuthenticated() {
+    return this.isTokenValid();
   },
 
   // Get current user
   getCurrentUser() {
     const userInfo = localStorage.getItem('user_info');
     return userInfo ? JSON.parse(userInfo) : null;
-  },
-
-  // Check if user is authenticated
-  isAuthenticated() {
-    return !!localStorage.getItem('user_token');
   }
 };

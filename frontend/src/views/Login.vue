@@ -50,7 +50,7 @@
         Login
       </button>
 
-      <div class="text-center">
+      <div class="text-center mb-5">
         Don't have an account? 
         <router-link to="/register" class="link-primary">
           Register here
@@ -94,9 +94,9 @@ export default {
         // Redirect based on user role
         const user = authService.getCurrentUser();
         if (user.role === 'employer') {
-          this.$router.push('/employers');
+          this.$router.push('/profile');
         } else if (user.role === 'jobseeker') {
-          this.$router.push('/job-seekers');
+          this.$router.push('/profile');
         } else {
           this.$router.push('/');
         }

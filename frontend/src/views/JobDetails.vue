@@ -1,6 +1,5 @@
 <template>
   <div class="job-details-view">
-    <nav-bar />
     
     <main class="main-content">
       <div class="container py-4">
@@ -104,7 +103,6 @@
       </div>
     </main>
 
-    <footers />
   </div>
 </template>
 
