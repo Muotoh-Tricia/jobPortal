@@ -40,6 +40,43 @@
       </div>
     </header>
 
+    <!-- Search Results Section -->
+    <section v-if="isSearchPerformed" class="py-5">
+      <div class="container">
+        <!-- Error State -->
+        <div v-if="searchError" class="alert alert-warning text-center" role="alert">
+          {{ searchError }}
+        </div>
+
+        <!-- Results State -->
+        <div v-else-if="searchResults.length > 0">
+          <h2 class="text-center mb-4">Search Results</h2>
+          <div class="row">
+            <div v-for="job in searchResults" :key="job.id" class="col-md-4 mb-4">
+              <div class="card h-100">
+                <div class="card-body">
+                  <h5 class="card-title">{{ job.title }}</h5>
+                  <p class="card-text text-muted">
+                    <i class="bi bi-geo-alt me-2"></i>{{ job.location }}
+                  </p>
+                  <p class="card-text">{{ job.description.slice(0, 100) }}...</p>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge bg-primary">{{ job.type }}</span>
+                    <button 
+                      @click="goToJobDetails(job.id)" 
+                      class="btn btn-sm btn-outline-secondary"
+                    >
+                      View Details
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Featured Job Categories -->
     <section class="py-5">
       <div class="container">
@@ -119,11 +156,29 @@
 </template>
 
 <script>
+import { useJobStore } from '@/stores/jobStore';
+import { ref } from 'vue';
+
 export default {
+  setup() {
+    const jobStore = useJobStore();
+    const jobKeyword = ref('');
+    const jobLocation = ref('');
+    const searchResults = ref([]);
+    const isSearchPerformed = ref(false);
+    const searchError = ref(null);
+
+    return {
+      jobStore,
+      jobKeyword,
+      jobLocation,
+      searchResults,
+      isSearchPerformed,
+      searchError
+    };
+  },
   data() {
     return {
-      jobKeyword: '',
-      jobLocation: '',
       popularTags: ['Software', 'Marketing', 'Design', 'Finance', 'Engineering'],
       jobCategories: [
         { name: 'Technology', icon: 'fas fa-laptop-code', jobCount: 453 },
@@ -133,12 +188,34 @@ export default {
     }
   },
   methods: {
-    searchJobs() {
-      console.log('searching jobs:', this.jobKeyword, this.jobLocation)
+    async searchJobs() {
+      // Reset previous search state
+      this.searchResults = [];
+      this.isSearchPerformed = true;
+      this.searchError = null;
+
+      // Prepare search parameters
+      const searchParams = {};
+      if (this.jobKeyword.trim()) searchParams.query = this.jobKeyword.trim();
+      if (this.jobLocation.trim()) searchParams.location = this.jobLocation.trim();
+
+      try {
+        // Perform job search
+        const results = await this.jobStore.searchJobs(searchParams);
+        
+        this.searchResults = results;
+
+        // Set error if no results found
+        if (this.searchResults.length === 0) {
+          this.searchError = 'No jobs found matching your search criteria.';
+        }
+      } catch (error) {
+        console.error('Job search error:', error);
+        this.searchError = 'Unable to perform search. Please try again later.';
+      }
     },
-    goToProfile() {
-      console.log('Navigating to the profile creation page...');
-      this.$router.push({ name: 'Registration' });
+    goToJobDetails(jobId) {
+      this.$router.push({ name: 'job-details', params: { id: jobId } });
     }
   }
 }

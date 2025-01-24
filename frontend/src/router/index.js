@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import JobListings from '../views/JobListings.vue'
 import Login from '../views/Login.vue'
 import Registration from '../views/Registration.vue'
+import PostJob from '@/views/PostJob.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -27,6 +28,13 @@ const router = createRouter({
       name: "registration",
       component: Registration,
     },
+
+    {
+      path: "/post-job",
+      name: "post-job",
+      component: PostJob,
+    },
+
     {
       path: "/job/:id",
       name: "job-details",
@@ -46,8 +54,8 @@ const router = createRouter({
       path: "/profile",
       name: "profile",
       component: () => import("../views/Profile.vue"),
-      meta: { requiresAuth: true }
-    }
+      meta: { requiresAuth: true },
+    },
   ],
 });
 
