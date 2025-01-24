@@ -1,6 +1,5 @@
 <template>
   <div class="job-listings-view">
-    <!-- <nav-bar /> -->
     
     <main class="main-content">
       <!-- Search and Filter Section -->
@@ -192,20 +191,17 @@ export default {
             
             
             const searchResults = await this.jobStore.searchJobs(searchParams);
-            
-            // Check if no jobs were found after search
+
             if (!searchResults || searchResults.length === 0) {
               this.jobStore.error = 'No jobs found matching your search criteria.';
             }
           } catch (error) {
             console.error('Error searching jobs:', error);
-            
-            // Set user-friendly error message
+
             this.jobStore.error = 'Unable to perform search. Please try again later.';
           }
-        }, 300); // 300ms delay
+        }, 300); 
       } else {
-        // If no search criteria, fetch all jobs
         this.fetchJobs();
       }
     },

@@ -60,57 +60,61 @@
 
 
     <section class="bg-light py-5">
-      <div class="container">
-        <h2 class="text-center mb-5">How It Works</h2>
-
-        <div class="d-flex justify-content-center">
-
-          <div class="row mb-4">
-            <div class="col-md-4 text-center">
-              <div
-                class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle bg-primary text-white"
-                style="width: 80px; height: 80px;">
+    <div class="container">
+      <h2 class="text-center mb-5 fw-bold">How It Works</h2>
+      
+      <div class="row justify-content-center g-4">
+        <!-- Step 1: Create Profile -->
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm h-100 text-center p-4 hover-card">
+            <div class="mx-auto mb-4">
+              <div class="step-circle bg-primary text-white d-flex align-items-center justify-content-center">
                 <span class="h4 mb-0">1</span>
               </div>
-              <router-link to="/Registration" class="text-decoration-none">
-                Create Profile
-              </router-link>
-              <p class="text-muted">Build a comprehensive professional profile</p>
             </div>
+            <router-link to="/Registration" class="h5 text-decoration-none text-dark mb-3">
+              Create Profile
+            </router-link>
+            <p class="text-muted mb-0">
+              Build your professional profile and showcase your skills to potential employers
+            </p>
           </div>
-
-
-          <div class="row mb-4">
-            <div class="col-md-4 text-center">
-              <div
-                class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle bg-primary text-white"
-                style="width: 80px; height: 80px;">
-                <span class="h4 mb-0">2</span>
-              </div>
-              <router-link to="/jobs" class="text-decoration-none">
-                Find Jobs
-              </router-link>
-              <p class="text-muted">Search and filter jobs matching your skills</p>
-            </div>
-          </div>
-
-
-          <div class="row mb-4">
-            <div class="col-md-4 text-center">
-              <div
-                class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle bg-primary text-white"
-                style="width: 80px; height: 80px;">
-                <span class="h4 mb-0">3</span>
-              </div>
-              <h5>Apply</h5>
-              <p class="text-muted">Submit applications directly through our platform</p>
-            </div>
-          </div>
-
         </div>
 
+        <!-- Step 2: Find Jobs -->
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm h-100 text-center p-4 hover-card">
+            <div class="mx-auto mb-4">
+              <div class="step-circle bg-primary text-white d-flex align-items-center justify-content-center">
+                <span class="h4 mb-0">2</span>
+              </div>
+            </div>
+            <router-link to="/jobs" class="h5 text-decoration-none text-dark mb-3">
+              Find Jobs
+            </router-link>
+            <p class="text-muted mb-0">
+              Search and filter through thousands of job opportunities matching your skills
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 3: Apply -->
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm h-100 text-center p-4 hover-card">
+            <div class="mx-auto mb-4">
+              <div class="step-circle bg-primary text-white d-flex align-items-center justify-content-center">
+                <span class="h4 mb-0">3</span>
+              </div>
+            </div>
+            <h5 class="mb-3">Apply</h5>
+            <p class="text-muted mb-0">
+              Submit applications directly and track your application status in real-time
+            </p>
+          </div>
+        </div>
       </div>
-    </section>
+    </div>
+  </section>
   </div>
 </template>
 
@@ -140,4 +144,18 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style scoped>
+.step-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+}
+
+.hover-card {
+  transition: transform 0.3s ease;
+}
+
+.hover-card:hover {
+  transform: translateY(-5px);
+}
+</style>

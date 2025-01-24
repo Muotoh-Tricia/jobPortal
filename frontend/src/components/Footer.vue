@@ -53,7 +53,7 @@
             <hr class="bg-secondary" />
 
             <div class="text-center py-3">
-                <p class="mb-0">&copy; 2024 JobPortal. All Rights Reserved.</p>
+                <p class="mb-0">&copy; 2025 JobMe. All Rights Reserved.</p>
             </div>
         </div>
     </footer>
