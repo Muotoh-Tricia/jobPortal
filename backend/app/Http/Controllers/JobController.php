@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use App\Models\Application;
 
 class JobController extends Controller
 {
@@ -214,6 +215,101 @@ class JobController extends Controller
             return response()->json([
                 'message' => 'Unable to fetch jobs',
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function checkApplicationEligibility(Request $request, $jobId)
+    {
+        // Detailed logging
+        \Log::info('Eligibility Check Request', [
+            'job_id' => $jobId,
+            'user_id' => $request->user()->id,
+            'user_email' => $request->user()->email,
+            'full_request' => $request->all()
+        ]);
+
+        try {
+            // Get the authenticated user
+            $user = $request->user();
+
+            // Find the job
+            $job = Job::findOrFail($jobId);
+
+            // Detailed job logging
+            \Log::info('Job Details for Eligibility Check', [
+                'job_id' => $job->id,
+                'job_title' => $job->title,
+                'job_status' => $job->status
+            ]);
+
+            // Check if job is active
+            if ($job->status !== 'active') {
+                \Log::warning('Job not active for application', [
+                    'job_id' => $jobId,
+                    'current_status' => $job->status
+                ]);
+
+                return response()->json([
+                    'eligible' => false,
+                    'message' => 'This job is no longer accepting applications.'
+                ], 400);
+            }
+
+            // Check if user has already applied
+            $existingApplication = Application::where('job_id', $jobId)
+                ->where('user_id', $user->id)
+                ->first();
+
+            if ($existingApplication) {
+                \Log::warning('Duplicate job application attempt', [
+                    'job_id' => $jobId,
+                    'user_id' => $user->id,
+                    'existing_application_id' => $existingApplication->id
+                ]);
+
+                return response()->json([
+                    'eligible' => false,
+                    'message' => 'You have already applied for this job.'
+                ], 400);
+            }
+
+            // Check application deadline
+            if ($job->application_deadline && now() > $job->application_deadline) {
+                \Log::warning('Application deadline passed', [
+                    'job_id' => $jobId,
+                    'application_deadline' => $job->application_deadline,
+                    'current_time' => now()
+                ]);
+
+                return response()->json([
+                    'eligible' => false,
+                    'message' => 'Application deadline has passed.'
+                ], 400);
+            }
+
+            // All checks passed
+            \Log::info('Job application eligibility confirmed', [
+                'job_id' => $jobId,
+                'user_id' => $user->id
+            ]);
+
+            return response()->json([
+                'eligible' => true,
+                'message' => 'You are eligible to apply for this job.'
+            ]);
+        } catch (\Exception $e) {
+            // Comprehensive error logging
+            \Log::error('Eligibility Check Error', [
+                'message' => $e->getMessage(),
+                'job_id' => $jobId,
+                'user_id' => $request->user()->id,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'eligible' => false,
+                'message' => 'An error occurred while checking job eligibility.'
             ], 500);
         }
     }

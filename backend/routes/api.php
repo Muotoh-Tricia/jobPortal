@@ -58,14 +58,16 @@ Route::prefix('v1')->group(function () {
         Route::put('/{job}', [JobController::class, 'update'])->middleware('auth:sanctum');
         Route::delete('/{job}', [JobController::class, 'destroy'])->middleware('auth:sanctum');
         Route::get('/{job}/applications', [JobController::class, 'applications']);
+        Route::get('/{job}/check-eligibility', [JobController::class, 'checkApplicationEligibility'])
+            ->middleware('auth:sanctum');
     });
 
     // Application Routes
     Route::prefix('applications')->group(function () {
-        Route::get('/', [ApplicationController::class, 'index']);
+        Route::get('/', [ApplicationController::class, 'index'])->middleware('auth:sanctum');
         Route::post('/', [ApplicationController::class, 'store'])->middleware('auth:sanctum');
         Route::get('/user', [ApplicationController::class, 'userApplications'])->middleware('auth:sanctum');
-        Route::get('/{application}', [ApplicationController::class, 'show']);
+        Route::get('/{application}', [ApplicationController::class, 'show'])->middleware('auth:sanctum');
         Route::put('/{application}', [ApplicationController::class, 'update'])->middleware('auth:sanctum');
         Route::delete('/{application}', [ApplicationController::class, 'destroy'])->middleware('auth:sanctum');
         Route::patch('/{application}/status', [ApplicationController::class, 'updateStatus'])->middleware('auth:sanctum');
