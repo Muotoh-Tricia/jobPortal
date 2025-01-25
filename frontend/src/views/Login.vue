@@ -52,7 +52,7 @@
 
       <div class="text-center mb-5">
         Don't have an account? 
-        <router-link to="/register" class="link-primary">
+        <router-link to="/registration" class="link-primary">
           Register here
         </router-link>
       </div>
