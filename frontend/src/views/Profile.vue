@@ -118,10 +118,15 @@
 </template>
 
 <script>
-import authService from '@/services/authService';
+import { useAuthStore } from '@/stores/authStore';
+import apiClient from '@/services/apiClient';
 
 export default {
   name: 'ProfileDashboard',
+  setup() {
+    const authStore = useAuthStore();
+    return { authStore };
+  },
   data() {
     return {
       currentUser: null,
@@ -130,14 +135,59 @@ export default {
       profileImage: 'https://via.placeholder.com/150'
     }
   },
-  created() {
-    this.currentUser = authService.getCurrentUser();
-    
-    if (!this.currentUser) {
+  async created() {
+    try {
+      // Get current user from auth store
+      this.currentUser = this.authStore.user;
+      
+      if (!this.currentUser) {
+        this.$router.push('/login');
+        return;
+      }
+
+      // If employer, fetch their job postings
+      if (this.currentUser.role === 'employer') {
+        await this.fetchEmployerJobs();
+      } else if (this.currentUser.role === 'jobseeker') {
+        await this.fetchJobSeekerApplications();
+      }
+    } catch (error) {
+      console.error('Profile initialization error:', error);
       this.$router.push('/login');
     }
   },
   methods: {
+    async fetchEmployerJobs() {
+      try {
+        // Get the current employer's ID
+        const employer = await this.authStore.getCurrentEmployer();
+        
+        if (!employer) {
+          console.warn('No employer profile found');
+          return;
+        }
+
+        // Fetch jobs for this employer
+        const response = await apiClient.get(`/v1/employers/${employer.id}/jobs`);
+        
+        this.jobPostings = response.data.map(job => ({
+          ...job,
+          application_count: job.applications_count || 0,
+          created_at: job.created_at
+        }));
+      } catch (error) {
+        console.error('Error fetching employer jobs:', error);
+        // Optionally show an error message to the user
+      }
+    },
+    async fetchJobSeekerApplications() {
+      try {
+        const response = await apiClient.get('/v1/job-seeker/applications');
+        this.applications = response.data;
+      } catch (error) {
+        console.error('Error fetching job seeker applications:', error);
+      }
+    },
     formatDate(dateString) {
       return new Date(dateString).toLocaleDateString();
     },

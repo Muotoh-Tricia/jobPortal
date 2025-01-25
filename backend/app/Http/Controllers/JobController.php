@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Job;
+use App\Models\Employer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
@@ -32,19 +33,34 @@ class JobController extends Controller
 
     public function store(Request $request)
     {
+        // Log the incoming request details
+        \Log::info('Job Creation Request', [
+            'user_id' => $request->user()->id,
+            'user_email' => $request->user()->email,
+            'user_role' => $request->user()->role,
+            'request_data' => $request->all()
+        ]);
+
         $validator = Validator::make($request->all(), [
             'employer_id' => 'required|exists:employers,id',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'requirements' => 'nullable|string',
-            'salary_range' => 'nullable|string',
+            'salary' => 'nullable|numeric',
             'location' => 'required|string',
             'job_type' => 'required|in:full-time,part-time,contract,remote',
+            'application_deadline' => 'required|date',
             'status' => 'in:active,closed,draft'
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        // Additional authorization check
+        $employer = Employer::find($request->input('employer_id'));
+        if (!$employer || $employer->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized to create job for this employer'], 403);
         }
 
         $job = Job::create($request->all());
@@ -171,6 +187,33 @@ class JobController extends Controller
             return response()->json([
                 'error' => 'An unexpected error occurred during job search.',
                 'details' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getEmployerJobs($employerId)
+    {
+        try {
+            // Validate that the authenticated user owns this employer profile
+            $employer = Employer::findOrFail($employerId);
+            
+            // Ensure the authenticated user matches the employer's user_id
+            if ($employer->user_id !== auth()->id()) {
+                return response()->json(['message' => 'Unauthorized to view these jobs'], 403);
+            }
+
+            // Fetch jobs with application count
+            $jobs = Job::where('employer_id', $employerId)
+                ->withCount('applications')
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return response()->json($jobs);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching employer jobs: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Unable to fetch jobs',
+                'error' => $e->getMessage()
             ], 500);
         }
     }

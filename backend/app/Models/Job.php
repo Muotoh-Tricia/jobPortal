@@ -16,9 +16,10 @@ class Job extends Model
         'title',
         'description',
         'requirements',
-        'salary_range',
+        'salary',
         'location',
-        'job_type',
+        'type',
+        'application_deadline',
         'status'
     ];
 
