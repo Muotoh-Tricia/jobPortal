@@ -197,7 +197,7 @@ export default {
     },
     viewJobApplications(jobId) {
       // Navigate to job applications view
-      this.$router.push(`/job-applications/${jobId}`);
+      this.$router.push(`/view-applications/${jobId}`);
     },
     editJob(jobId) {
       // Navigate to job editing view

@@ -1,11 +1,11 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
-import JobListings from '../views/JobListings.vue'
-import Login from '../views/Login.vue'
-import Registration from '../views/Registration.vue'
-import PostJob from '@/views/PostJob.vue'
-import JobApplicationView from '@/views/JobApplication.vue'
-import JobDetails from '../views/JobDetails.vue'
+import { createRouter, createWebHistory } from "vue-router";
+import HomeView from "../views/HomeView.vue";
+import JobListings from "../views/JobListings.vue";
+import Login from "../views/Login.vue";
+import Registration from "../views/Registration.vue";
+import PostJob from "@/views/PostJob.vue";
+import JobApplicationView from "@/views/JobApplication.vue";
+import JobDetails from "../views/JobDetails.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,6 +19,16 @@ const router = createRouter({
       path: "/jobs",
       name: "jobs",
       component: JobListings,
+    },
+    {
+      path: "/about",
+      name: "about",
+      component: () => import("@/views/AboutUs.vue"),
+    },
+    {
+      path: "/contact",
+      name: "contact",
+      component: () => import("@/views/ContactView.vue"),
     },
     {
       path: "/login",
@@ -59,12 +69,18 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
-      path: '/jobs/:jobId/apply',
-      name: 'JobApplication',
+      path: "/view-applications/:jobId?",
+      name: "view-applications",
+      component: () => import("@/views/ViewApplication.vue"),
+      meta: { requiresAuth: true, employerOnly: true }
+    },
+    {
+      path: "/jobs/:jobId/apply",
+      name: "JobApplication",
       component: JobApplicationView,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true },
     },
   ],
 });
 
-export default router
+export default router;

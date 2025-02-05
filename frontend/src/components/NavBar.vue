@@ -23,6 +23,16 @@
                 <i class="bi bi-search me-1"></i> Jobs
               </router-link>
             </li>
+            <li class="nav-item mx-1">
+              <router-link to="/about" class="nav-link text-white px-3">
+                <i class="bi bi-info-circle me-1"></i> About
+              </router-link>
+            </li>
+            <li class="nav-item mx-1">
+              <router-link to="/contact" class="nav-link text-white px-3">
+                <i class="bi bi-envelope me-1"></i> Contact
+              </router-link>
+            </li>
 
             <!-- Guest Navigation -->
             <template v-if="!isUserAuthenticated">
@@ -120,6 +130,4 @@ export default {
 }
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
